@@ -1,0 +1,37 @@
+name: Build Kernel op5
+on:
+  push:
+    branches:    
+      - 10.0
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'version'
+        required: false
+        default: '1.0.0'
+
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Init Repo
+      run: |
+        cd ~
+        git clone https://github.com/Blankeer/android_kernel_oneplus_msm8998 -b 10.0 --depth=1 
+        git clone https://github.com/osm0sis/AnyKernel3 --depth=1 
+    - name: Build With Shell
+      run: |
+        cd ~/android_kernel_oneplus_msm8998
+        bash build.sh
+    - name: Package With AnyKernel
+      run: |
+        cd ~
+        cp AnyKernel3 ./ -r
+        cd AnyKernel3/
+        cp ../android_kernel_oneplus_msm8998/out/arch/arm64/boot/Image.gz-dtb  ./
+    - name : Upload artifact
+      uses: actions/upload-artifact@master
+      with:
+        name: op5_kernel.zip
+        path: /home/runner/AnyKernel3/
